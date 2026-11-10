@@ -1,0 +1,68 @@
+AssetScope — third-party notices
+=====================================
+
+AssetScope incorporates adapted portions of the MIT-licensed Fungible project
+(https://github.com/tomfunk/fungible), © Thomas Funk and the Fungible
+contributors. Those portions are maintained locally under
+`native-api/src/core`.
+
+Bundled or referenced at runtime
+--------------------------------
+
+Node.js runtime (node.exe)            MIT-style license — https://github.com/nodejs/node/blob/main/LICENSE
+@libsql/client, libsql, @libsql/*     MIT — https://github.com/tursodatabase/libsql-client-ts
+@neon-rs/load                         MIT — https://github.com/neon-bindings/neon
+detect-libc                           Apache-2.0 — https://github.com/lovell/detect-libc
+js-base64                             BSD-3-Clause — https://github.com/dankogai/js-base64
+promise-limit                         ISC — https://github.com/featurist/promise-limit
+ws                                    MIT — https://github.com/websockets/ws
+plaid (plaid-node SDK)                MIT — https://github.com/plaid/plaid-node
+snaptrade-typescript-sdk              MIT — https://github.com/passiv/snaptrade-typescript-sdk
+dotenv                                BSD-2-Clause — https://github.com/motdotla/dotenv
+zod                                   MIT — https://github.com/colinhacks/zod
+
+Microsoft.WindowsAppSDK / WinUI 3     Microsoft Software License — https://aka.ms/windowsappsdk/license
+Microsoft.Windows.SDK.BuildTools      Microsoft Software License
+CommunityToolkit.Mvvm                 MIT — https://github.com/CommunityToolkit/dotnet
+.NET runtime (self-contained)         MIT — https://github.com/dotnet/runtime
+Simple Icons brand glyphs             CC0-1.0 — https://github.com/simple-icons/simple-icons
+
+Build-time only
+---------------
+
+esbuild                               MIT — https://github.com/evanw/esbuild
+tsx                                   MIT — https://github.com/privatenumber/tsx
+TypeScript, vitest, xunit             MIT / Apache-2.0 (see each project)
+
+Plaid is a trademark of Plaid Inc. This application is not affiliated with or
+endorsed by Plaid Inc., SnapTrade, or the Fungible project. It is not a bank,
+brokerage, or financial advisor.
+
+Bank of America, Chase, and Robinhood names and logos are trademarks of their
+respective owners. Their local glyphs are used only to identify institutions
+connected by the user; no affiliation or endorsement is implied.
+
+Fungible license
+----------------
+
+MIT License
+
+Copyright (c) 2026 Thomas Funk
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

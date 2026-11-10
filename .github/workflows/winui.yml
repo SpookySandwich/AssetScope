@@ -1,0 +1,100 @@
+name: CI & Build Release Package
+
+on:
+  push:
+    branches: ['main']
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-package:
+    name: Build, Test & Package AssetScope
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Setup .NET 10.0
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install Node Dependencies
+        run: npm ci
+
+      - name: Typecheck Backend Sidecar
+        run: npm run typecheck
+
+      - name: Run Backend Unit & Contract Tests
+        run: npm test
+
+      - name: Run WinUI & Core .NET Tests
+        run: dotnet test winui/AssetScope.Tests/AssetScope.Tests.csproj -c Release --nologo
+
+      - name: Build & Publish WinUI Desktop App
+        run: |
+          dotnet publish winui/AssetScope.App/AssetScope.App.csproj -c Release -r win-x64 -p:Platform=x64 --self-contained -o dist/app --nologo
+
+      - name: Bundle Sidecar Backend
+        shell: pwsh
+        run: |
+          npx esbuild native-api/src/main.ts --bundle --platform=node --target=node22 --format=esm --outfile=dist/sidecar/sidecar.mjs --external:@libsql/client --external:libsql "--banner:js=import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);"
+          npx esbuild native-api/src/cli.ts --bundle --platform=node --target=node22 --format=esm --outfile=dist/sidecar/assetscope.mjs --external:@libsql/client --external:libsql "--banner:js=import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);"
+          
+          $runtimeDeps = @('@libsql', 'libsql', 'js-base64', 'promise-limit', '@neon-rs', 'detect-libc', 'ws')
+          New-Item -ItemType Directory -Force dist/sidecar/node_modules | Out-Null
+          foreach ($dep in $runtimeDeps) {
+            if (Test-Path "node_modules\$dep") {
+              Copy-Item -Recurse -Force "node_modules\$dep" "dist/sidecar/node_modules\$dep"
+            }
+          }
+          
+          Copy-Item -Force (Get-Command node).Source dist/sidecar/node.exe
+          "@echo off`r`n`"%~dp0node.exe`" `"%~dp0assetscope.mjs`" %*" | Set-Content dist/sidecar/assetscope.cmd -Encoding ASCII
+
+      - name: Prepare Release Package
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist/AssetScope-win-x64 | Out-Null
+          Copy-Item -Recurse -Force dist/app/* dist/AssetScope-win-x64/
+          Copy-Item -Recurse -Force dist/sidecar dist/AssetScope-win-x64/sidecar
+          Copy-Item -Force LICENSE dist/AssetScope-win-x64/
+          Copy-Item -Force THIRD_PARTY_NOTICES.txt dist/AssetScope-win-x64/
+          Copy-Item -Force README.md dist/AssetScope-win-x64/
+          Copy-Item -Force build/install-winui.ps1 dist/AssetScope-win-x64/Install.ps1
+          Compress-Archive -Path dist/AssetScope-win-x64/* -DestinationPath dist/AssetScope-win-x64.zip -Force
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AssetScope-win-x64
+          path: dist/AssetScope-win-x64.zip
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Automated GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'v1.0.0' }}
+          name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'AssetScope v1.0.0' }}
+          files: dist/AssetScope-win-x64.zip
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+

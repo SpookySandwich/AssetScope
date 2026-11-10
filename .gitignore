@@ -1,0 +1,26 @@
+.env
+*.db
+*.sqlite
+node_modules/
+dist/
+memory/
+PLANS.md
+scripts/seed-rules.ts
+.claude/*
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/assetscope/
+.claude/skills/assetscope/config.json
+out/
+release/
+test-results/
+playwright-report/
+
+# WinUI build output
+winui/**/bin/
+winui/**/obj/
+artifacts/
+
+
+# One-off local maintenance scripts
+repair.mjs

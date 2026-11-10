@@ -1,0 +1,195 @@
+<Page
+    x:Class="AssetScope.App.Pages.HomePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mux="using:Microsoft.UI.Xaml.Controls"
+    xmlns:controls="using:AssetScope.App.Controls"
+    AutomationProperties.AutomationId="HomePage"
+    Background="{ThemeResource AppCanvasBrush}"
+    NavigationCacheMode="Required">
+
+    <ScrollViewer HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled"
+                  VerticalScrollBarVisibility="Hidden"
+                  HorizontalContentAlignment="Stretch">
+        <!-- Fill the navigation content viewport. Responsive code reflows the
+             two dashboard columns from their actual padded content width. -->
+        <StackPanel Style="{StaticResource ReferencePageStackStyle}">
+            <controls:PageHeader x:Name="Header" />
+
+            <mux:InfoBar x:Name="DemoBanner" IsOpen="False" Severity="Informational" IsClosable="True"
+                         x:Uid="DemoBanner">
+                <mux:InfoBar.ActionButton>
+                    <Button x:Uid="DemoBannerAction" Click="DemoBannerAction_Click" />
+                </mux:InfoBar.ActionButton>
+            </mux:InfoBar>
+
+            <mux:InfoBar x:Name="QualityBar" IsOpen="False" Severity="Warning" IsClosable="True" />
+
+            <!-- Empty state (SPEC §22.2) -->
+            <StackPanel x:Name="EmptyState" Visibility="Collapsed" Spacing="12"
+                        HorizontalAlignment="Center" Margin="0,60,0,0" MaxWidth="420">
+                <FontIcon Glyph="&#xE825;" FontSize="40" HorizontalAlignment="Center"
+                          Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock x:Uid="EmptyTitle" HorizontalAlignment="Center"
+                           Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TextBlock x:Uid="EmptyBody" HorizontalAlignment="Center" TextWrapping="Wrap"
+                           TextAlignment="Center"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <Button x:Name="ConnectBankEmptyButton" x:Uid="EmptyConnectBank" HorizontalAlignment="Center"
+                        Style="{StaticResource AccentButtonStyle}" Click="ConnectBankEmptyButton_Click" />
+            </StackPanel>
+
+            <Grid x:Name="ContentGrid" AutomationProperties.AutomationId="HomeDashboard"
+                  ColumnSpacing="16" RowSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="PrimaryColumn" Width="2*" MinWidth="420" />
+                    <ColumnDefinition x:Name="SecondaryColumn" Width="*" MinWidth="300" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- Net worth + trend -->
+                <Border x:Name="TrendCard" AutomationProperties.AutomationId="HomeTrendCard"
+                        Grid.Row="0" Grid.Column="0" Style="{StaticResource HeroCardStyle}">
+                    <StackPanel Spacing="8">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock x:Uid="NetWorthTitle" Style="{StaticResource CardTitleStyle}"
+                                           VerticalAlignment="Center" />
+                                <Button x:Name="NetWorthInfoButton"
+                                        Style="{StaticResource InfoTipButtonStyle}"
+                                        AutomationProperties.AutomationId="NetWorthInfoButton">
+                                    <FontIcon Glyph="&#xE946;" FontSize="12"
+                                              Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                    <Button.Flyout>
+                                        <Flyout Placement="Bottom">
+                                            <TextBlock x:Name="NetWorthInfoFlyoutText"
+                                                       x:Uid="NetWorthTooltip"
+                                                       TextWrapping="Wrap" MaxWidth="320" />
+                                        </Flyout>
+                                    </Button.Flyout>
+                                </Button>
+                            </StackPanel>
+                            <ComboBox x:Name="RangeBar" HorizontalAlignment="Right" MinWidth="132"
+                                      SelectedIndex="2" SelectionChanged="RangeBar_SelectionChanged">
+                                <ComboBoxItem x:Uid="HomeRange1M" Tag="1m" />
+                                <ComboBoxItem x:Uid="HomeRange3M" Tag="3m" />
+                                <ComboBoxItem x:Uid="HomeRange1Y" Tag="1y" />
+                                <ComboBoxItem x:Uid="HomeRangeAll" Tag="all" />
+                            </ComboBox>
+                        </Grid>
+                        <TextBlock x:Name="NetWorthText" Style="{StaticResource HeroAmountStyle}" />
+                        <controls:ChangeBadge x:Name="NetWorthChange" AmountFontSize="13" />
+                        <controls:TrendChart x:Name="Chart" Height="220" Margin="0,8,0,0"
+                                             XTickCount="11" YTickCount="4"
+                                             LineThickness="1.8" FillOpacity="112"
+                                             ShowEndMarker="True" />
+                        <TextBlock x:Name="ChartEmptyText" x:Uid="ChartNoData" Visibility="Collapsed"
+                                   HorizontalAlignment="Center" Margin="0,60,0,60"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Right column: summary + allocation -->
+                <Grid x:Name="SummaryPanel" AutomationProperties.AutomationId="HomeSummaryPanel"
+                      Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" RowSpacing="18">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Border Grid.Row="0" Style="{StaticResource CardStyle}">
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="56" /></Grid.ColumnDefinitions>
+                            <StackPanel Spacing="8">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock x:Uid="TotalAssetsLabel" Style="{StaticResource CardTitleStyle}" />
+                                    <Button Style="{StaticResource InfoTipButtonStyle}">
+                                        <FontIcon Glyph="&#xE946;" FontSize="12"
+                                                  Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                        <Button.Flyout>
+                                            <Flyout Placement="Bottom">
+                                                <TextBlock x:Uid="TotalAssetsTooltip" TextWrapping="Wrap" MaxWidth="280" />
+                                            </Flyout>
+                                        </Button.Flyout>
+                                    </Button>
+                                </StackPanel>
+                                <TextBlock x:Name="AssetsText" FontSize="30" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                <controls:ChangeBadge x:Name="BigChange" AmountFontSize="13" />
+                                <TextBlock x:Name="AsOfText" Visibility="Collapsed" />
+                            </StackPanel>
+                            <Border Grid.Column="1" Width="54" Height="54" CornerRadius="10"
+                                    Background="{ThemeResource ReferenceBlueTintBrush}" VerticalAlignment="Center">
+                                <FontIcon Glyph="&#xE8F1;" FontSize="23" Foreground="{ThemeResource ReferenceBlueTextBrush}" />
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Row="1" Style="{StaticResource CardStyle}">
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="56" /></Grid.ColumnDefinitions>
+                            <StackPanel Spacing="8">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock x:Uid="HomeCreditCardLiabilities" Style="{StaticResource CardTitleStyle}" />
+                                    <Button Style="{StaticResource InfoTipButtonStyle}">
+                                        <FontIcon Glyph="&#xE946;" FontSize="12"
+                                                  Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                        <Button.Flyout>
+                                            <Flyout Placement="Bottom">
+                                                <TextBlock x:Uid="TotalLiabilitiesTooltip" TextWrapping="Wrap" MaxWidth="280" />
+                                            </Flyout>
+                                        </Button.Flyout>
+                                    </Button>
+                                </StackPanel>
+                                <TextBlock x:Name="LiabilitiesText" FontSize="30" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                <controls:ChangeBadge x:Name="LiabilitiesChange" AmountFontSize="13" />
+                            </StackPanel>
+                            <Border Grid.Column="1" Width="54" Height="54" CornerRadius="10"
+                                    Background="{ThemeResource ReferenceRedTintBrush}" VerticalAlignment="Center">
+                                <FontIcon Glyph="&#xE8C7;" FontSize="23" Foreground="{StaticResource ReferenceRedBrush}" />
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Row="2" Style="{StaticResource CardStyle}">
+                        <StackPanel Spacing="12">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock x:Uid="AllocationTitle" Style="{StaticResource CardTitleStyle}" />
+                                <Button Style="{StaticResource InfoTipButtonStyle}">
+                                    <FontIcon Glyph="&#xE946;" FontSize="12"
+                                              Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                    <Button.Flyout>
+                                        <Flyout Placement="Bottom">
+                                            <TextBlock x:Uid="AllocationTooltip" TextWrapping="Wrap" MaxWidth="280" />
+                                        </Flyout>
+                                    </Button.Flyout>
+                                </Button>
+                            </StackPanel>
+                            <Grid ColumnSpacing="16">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="168" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                <controls:DonutChart x:Name="Donut" Width="168" Height="168" RingThickness="22" />
+                                <StackPanel x:Name="AllocationLegend" Grid.Column="1" Spacing="8" VerticalAlignment="Center" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- Account overview -->
+                <StackPanel x:Name="AccountOverviewPanel" AutomationProperties.AutomationId="HomeAccountOverview"
+                            Grid.Row="1" Grid.Column="0" Spacing="10">
+                    <TextBlock x:Uid="AccountOverviewTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <ItemsRepeater x:Name="AccountCards">
+                        <ItemsRepeater.Layout>
+                            <UniformGridLayout MinItemWidth="230" MinItemHeight="236"
+                                               MinRowSpacing="12" MinColumnSpacing="12"
+                                               ItemsStretch="Fill" MaximumRowsOrColumns="3" />
+                        </ItemsRepeater.Layout>
+                    </ItemsRepeater>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

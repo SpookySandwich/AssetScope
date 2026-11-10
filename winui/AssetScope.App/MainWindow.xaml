@@ -1,0 +1,132 @@
+<Window
+    x:Class="AssetScope.App.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mux="using:Microsoft.UI.Xaml.Controls"
+    Title="AssetScope">
+
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid x:Name="RootGrid">
+        <!-- NavigationView is the window surface, including under the caption.
+             The brand mark sits on top of the pane with no fill of its own, so
+             it cannot pick up a second mica layer. -->
+        <mux:NavigationView x:Name="Nav"
+                            IsEnabled="False"
+                            PaneDisplayMode="LeftCompact"
+                            IsPaneOpen="False"
+                            OpenPaneLength="280"
+                            CompactPaneLength="64"
+                            IsBackButtonVisible="Collapsed"
+                            IsSettingsVisible="False"
+                            IsTitleBarAutoPaddingEnabled="True"
+                            PaneOpened="Nav_PaneOpened"
+                            PaneClosed="Nav_PaneClosed"
+                            SelectionChanged="Nav_SelectionChanged">
+            <mux:NavigationView.MenuItems>
+                <mux:NavigationViewItem x:Uid="NavHome" Tag="home" AutomationProperties.AutomationId="NavHome">
+                    <mux:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE80F;" />
+                    </mux:NavigationViewItem.Icon>
+                </mux:NavigationViewItem>
+                <mux:NavigationViewItem x:Uid="NavAccounts" Tag="accounts" AutomationProperties.AutomationId="NavAccounts">
+                    <mux:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8C7;" />
+                    </mux:NavigationViewItem.Icon>
+                </mux:NavigationViewItem>
+                <mux:NavigationViewItem x:Uid="NavTransactions" Tag="transactions" AutomationProperties.AutomationId="NavTransactions">
+                    <mux:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8FD;" />
+                    </mux:NavigationViewItem.Icon>
+                </mux:NavigationViewItem>
+                <mux:NavigationViewItem x:Uid="NavInvestments" Tag="investments" AutomationProperties.AutomationId="NavInvestments">
+                    <mux:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xEB05;" />
+                    </mux:NavigationViewItem.Icon>
+                </mux:NavigationViewItem>
+                <mux:NavigationViewItem x:Uid="NavLiving" Tag="living" AutomationProperties.AutomationId="NavLiving">
+                    <mux:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE7BF;" />
+                    </mux:NavigationViewItem.Icon>
+                </mux:NavigationViewItem>
+                <mux:NavigationViewItem x:Uid="NavRewards" Tag="rewards" AutomationProperties.AutomationId="NavRewards">
+                    <mux:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE734;" />
+                    </mux:NavigationViewItem.Icon>
+                </mux:NavigationViewItem>
+                <mux:NavigationViewItem x:Uid="NavTrends" Tag="trends" AutomationProperties.AutomationId="NavTrends">
+                    <mux:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE9D2;" />
+                    </mux:NavigationViewItem.Icon>
+                </mux:NavigationViewItem>
+            </mux:NavigationView.MenuItems>
+
+            <mux:NavigationView.FooterMenuItems>
+                <mux:NavigationViewItem x:Name="PrivacyNavItem" x:Uid="NavPrivacy" Tag="privacy"
+                                        AutomationProperties.AutomationId="NavPrivacy"
+                                        >
+                    <mux:NavigationViewItem.Icon>
+                        <FontIcon x:Name="PrivacyNavIcon" Glyph="&#xE890;" />
+                    </mux:NavigationViewItem.Icon>
+                </mux:NavigationViewItem>
+                <mux:NavigationViewItem x:Name="SettingsNavItem" x:Uid="NavSettings" Tag="settings"
+                                        AutomationProperties.AutomationId="NavSettings">
+                    <mux:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE713;" />
+                    </mux:NavigationViewItem.Icon>
+                </mux:NavigationViewItem>
+            </mux:NavigationView.FooterMenuItems>
+
+            <Grid Background="{ThemeResource AppCanvasBrush}">
+                <Frame x:Name="ContentFrame" />
+
+                <!-- Startup / fatal-error overlay -->
+                <Grid x:Name="StartupOverlay" Background="{ThemeResource LayerFillColorDefaultBrush}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16" MaxWidth="480">
+                        <ProgressRing x:Name="StartupRing" IsActive="True" Width="44" Height="44" />
+                        <TextBlock x:Name="StartupText" x:Uid="StartupStarting"
+                                   HorizontalAlignment="Center" TextWrapping="Wrap"
+                                   Style="{StaticResource BodyTextBlockStyle}" />
+                        <TextBlock x:Name="StartupErrorText" Visibility="Collapsed"
+                                   TextWrapping="Wrap" HorizontalAlignment="Center"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   FontSize="12" IsTextSelectionEnabled="True" />
+                        <Button x:Name="RetryButton" x:Uid="StartupRetry" Visibility="Collapsed"
+                                HorizontalAlignment="Center" Click="RetryButton_Click" />
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </mux:NavigationView>
+
+        <!-- Drag region only. The brand host is transparent so the pane shows
+             through; a filled square here is what made the logo look wrong. -->
+        <Grid x:Name="TitleBarArea" Height="48" VerticalAlignment="Top"
+              Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Border x:Name="TitleBarBrandHost" Width="64"
+                    Background="Transparent">
+                <StackPanel x:Name="TitleBarBrandContent" Orientation="Horizontal"
+                            HorizontalAlignment="Center" Spacing="10">
+                    <Image Source="ms-appx:///Assets/assetscope.png"
+                           Width="24" Height="24" Stretch="Uniform"
+                           VerticalAlignment="Center" />
+                    <TextBlock x:Name="AppTitleText" x:Uid="AppTitle"
+                               Visibility="Collapsed"
+                               VerticalAlignment="Center" FontSize="16" FontWeight="SemiBold" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Full-page setup gate (SPEC §15): declared after the NavigationView so
+             it paints above navigation and content until a bank is connected. -->
+        <Grid x:Name="SetupHost"
+              AutomationProperties.AutomationId="SetupHost"
+              Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+              Visibility="Collapsed" />
+    </Grid>
+</Window>

@@ -1,0 +1,109 @@
+<!--
+    Compact layout density (§21.1).
+
+    Merged by App.ApplyDensity after Density.Comfortable.xaml, so every key here
+    wins. WinUI's own XamlControlsResources.UseCompactResources is unavailable
+    outside Experimental builds of the Windows App SDK, so compact sizing is
+    expressed here instead: the app's shared card/type/page styles tighten, and
+    the handful of Fluent control metrics that drive row height follow.
+
+    Every key in Density.Comfortable.xaml must be redeclared, because a merged
+    dictionary overrides by key, not by property.
+-->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Card surface shared by every page. -->
+    <Style x:Key="CardStyle" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource ReferenceCardBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource ReferenceCardStrokeBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="12" />
+    </Style>
+
+    <Style x:Key="HeroCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+        <Setter Property="Padding" Value="14" />
+    </Style>
+
+    <Style x:Key="SubtleCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+        <Setter Property="Background" Value="{ThemeResource SubtleFillColorTransparentBrush}" />
+        <Setter Property="Padding" Value="10" />
+    </Style>
+
+    <Style x:Key="CardTitleStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style x:Key="HeroAmountStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="28" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style x:Key="StatAmountStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="19" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style x:Key="PageTitleStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="24" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style x:Key="PageSubtitleStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+    </Style>
+
+    <Style x:Key="CaptionSecondaryStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+    </Style>
+
+    <Style x:Key="CaptionStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="11" />
+    </Style>
+
+    <Style x:Key="SectionLabelStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style x:Key="StatTileStyle" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource ReferenceNeutralTintBrush}" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="10,8" />
+    </Style>
+
+    <Style x:Key="StatValueStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+
+    <Style x:Key="ReferencePageStackStyle" TargetType="StackPanel">
+        <Setter Property="Padding" Value="20,0,20,20" />
+        <Setter Property="Spacing" Value="10" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+    </Style>
+
+    <Style x:Key="ReferencePageGridStyle" TargetType="Grid">
+        <Setter Property="Padding" Value="20,0,20,20" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+    </Style>
+
+    <!-- Fluent control metrics. These are the same knobs WinUI's compact
+         resource dictionary turns; overriding them here keeps list rows,
+         navigation items and input controls in step with the tightened cards
+         instead of leaving 40px rows inside 12px padding. -->
+    <x:Double x:Key="ListViewItemMinHeight">32</x:Double>
+    <x:Double x:Key="GridViewItemMinHeight">32</x:Double>
+    <x:Double x:Key="NavigationViewItemOnLeftMinHeight">32</x:Double>
+    <x:Double x:Key="TextControlThemeMinHeight">28</x:Double>
+    <x:Double x:Key="ComboBoxMinHeight">28</x:Double>
+    <Thickness x:Key="ButtonPadding">9,3,9,4</Thickness>
+    <Thickness x:Key="TextControlThemePadding">9,3,9,4</Thickness>
+
+</ResourceDictionary>

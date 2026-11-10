@@ -1,0 +1,295 @@
+<Page
+    x:Class="AssetScope.App.Pages.LivingPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mux="using:Microsoft.UI.Xaml.Controls"
+    xmlns:controls="using:AssetScope.App.Controls"
+    AutomationProperties.AutomationId="LivingPage"
+    Background="{ThemeResource AppCanvasBrush}"
+    NavigationCacheMode="Required">
+
+    <!-- Viewport-sized shell: the page never scrolls; each column scrolls
+         inside. The yardstick is a typical month (recent full months), so the
+         page reads the same on the 2nd as on the 28th. Nothing here asks the
+         user anything; unconfirmed items show N/A and stay out of the math. -->
+    <Grid Style="{StaticResource ReferencePageGridStyle}" RowSpacing="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Spacing="16">
+            <controls:PageHeader x:Name="Header" />
+            <mux:InfoBar x:Name="ErrorBar" IsOpen="False" IsClosable="True" Severity="Error" />
+        </StackPanel>
+
+        <StackPanel x:Name="EmptyState" Grid.Row="1" Visibility="Collapsed" Spacing="12"
+                    HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="440">
+            <FontIcon Glyph="&#xE7BF;" FontSize="40" HorizontalAlignment="Center"
+                      Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            <TextBlock x:Uid="LivingEmptyTitle" HorizontalAlignment="Center"
+                       Style="{StaticResource SubtitleTextBlockStyle}" />
+            <TextBlock x:Uid="LivingEmptyBody" HorizontalAlignment="Center" TextWrapping="Wrap"
+                       TextAlignment="Center"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+        </StackPanel>
+
+        <Grid x:Name="ContentGrid" Grid.Row="1" AutomationProperties.AutomationId="LivingContent"
+              ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="PrimaryColumn" Width="2*" MinWidth="420" />
+                <ColumnDefinition x:Name="SecondaryColumn" Width="*" MinWidth="300" />
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer x:Name="PrimaryScroller" Grid.Column="0"
+                          HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollMode="Auto" VerticalScrollBarVisibility="Hidden">
+                <StackPanel x:Name="PrimaryPanel" Spacing="16">
+
+                    <!-- A typical month -->
+                    <Border x:Name="TypicalCard" Style="{StaticResource HeroCardStyle}"
+                            AutomationProperties.AutomationId="LivingTypicalCard">
+                        <StackPanel Spacing="14">
+                            <Grid ColumnSpacing="24">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Spacing="6">
+                                    <TextBlock x:Uid="LivingTypicalLabel" Style="{StaticResource CardTitleStyle}" />
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock x:Name="TypicalSpendText" Style="{StaticResource HeroAmountStyle}"
+                                                   AutomationProperties.AutomationId="LivingTypicalSpendText" />
+                                        <TextBlock x:Name="TypicalPerMonthText" VerticalAlignment="Bottom" Margin="0,0,0,7"
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    </StackPanel>
+                                    <TextBlock x:Name="TypicalBasisText" TextWrapping="Wrap"
+                                               Style="{StaticResource CaptionSecondaryStyle}" />
+                                </StackPanel>
+                                <StackPanel x:Name="TypicalIncomePanel" Grid.Column="1" Spacing="4"
+                                            VerticalAlignment="Top" HorizontalAlignment="Right" MaxWidth="240">
+                                    <TextBlock x:Name="TypicalIncomeLabel" HorizontalAlignment="Right"
+                                               Style="{StaticResource CaptionSecondaryStyle}" />
+                                    <TextBlock x:Name="TypicalIncomeText" HorizontalAlignment="Right"
+                                               Style="{StaticResource StatAmountStyle}" />
+                                    <TextBlock x:Name="TypicalKeepText" HorizontalAlignment="Right" TextAlignment="Right"
+                                               TextWrapping="Wrap" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </Grid>
+
+                            <TextBlock x:Name="TypicalEmptyText" x:Uid="LivingTypicalEmpty" Visibility="Collapsed"
+                                       TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+                            <StackPanel x:Name="TypicalBody" Spacing="14">
+                                <Grid x:Name="SplitBar" Height="12" CornerRadius="6"
+                                      AutomationProperties.AutomationId="LivingSplitBar">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition x:Name="FixedShareColumn" Width="*" />
+                                        <ColumnDefinition x:Name="FlexibleShareColumn" Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border x:Name="FixedShareFill" Grid.Column="0"
+                                            Background="{ThemeResource ReferencePurpleTintBrush}"
+                                            CornerRadius="6,0,0,6" />
+                                    <Border x:Name="FlexibleShareFill" Grid.Column="1"
+                                            Background="{StaticResource ReferenceBlueBrush}"
+                                            CornerRadius="0,6,6,0" />
+                                </Grid>
+                                <StackPanel Orientation="Horizontal" Spacing="18">
+                                    <StackPanel Orientation="Horizontal" Spacing="7">
+                                        <Border Width="10" Height="10" CornerRadius="3" VerticalAlignment="Center"
+                                                Background="{ThemeResource ReferencePurpleTintBrush}"
+                                                BorderBrush="{ThemeResource ReferenceCardStrokeBrush}" BorderThickness="1" />
+                                        <TextBlock x:Name="FixedLegendText" VerticalAlignment="Center"
+                                                   Style="{StaticResource CaptionSecondaryStyle}" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Spacing="7">
+                                        <Border Width="10" Height="10" CornerRadius="3" VerticalAlignment="Center"
+                                                Background="{StaticResource ReferenceBlueBrush}" />
+                                        <TextBlock x:Name="FlexibleLegendText" VerticalAlignment="Center"
+                                                   Style="{StaticResource CaptionSecondaryStyle}" />
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <Grid ColumnSpacing="10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Style="{StaticResource StatTileStyle}">
+                                        <StackPanel Spacing="2">
+                                            <TextBlock x:Uid="LivingTileFixed" Style="{StaticResource CaptionSecondaryStyle}" />
+                                            <TextBlock x:Name="TypicalFixedText" Style="{StaticResource StatValueStyle}" />
+                                            <TextBlock x:Name="TypicalFixedShareText" Style="{StaticResource CaptionSecondaryStyle}" TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Grid.Column="1" Style="{StaticResource StatTileStyle}">
+                                        <StackPanel Spacing="2">
+                                            <TextBlock x:Uid="LivingTileFlexible" Style="{StaticResource CaptionSecondaryStyle}" />
+                                            <TextBlock x:Name="TypicalFlexibleText" Style="{StaticResource StatValueStyle}" />
+                                            <TextBlock x:Name="TypicalFlexibleShareText" Style="{StaticResource CaptionSecondaryStyle}" TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Grid.Column="2" Style="{StaticResource StatTileStyle}">
+                                        <StackPanel Spacing="2">
+                                            <TextBlock x:Uid="LivingTileKept" Style="{StaticResource CaptionSecondaryStyle}" />
+                                            <TextBlock x:Name="TypicalLeftoverText" Style="{StaticResource StatValueStyle}" />
+                                            <TextBlock x:Name="TypicalLeftoverShareText" Style="{StaticResource CaptionSecondaryStyle}" TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+
+                                <TextBlock x:Name="GoalText" Visibility="Collapsed" TextWrapping="Wrap"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- This month against the yardstick -->
+                    <Border x:Name="ThisMonthCard" Style="{StaticResource CardStyle}"
+                            AutomationProperties.AutomationId="LivingThisMonthCard">
+                        <StackPanel Spacing="12">
+                            <Grid ColumnSpacing="16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock x:Name="ThisMonthTitleText" Style="{StaticResource CardTitleStyle}"
+                                           VerticalAlignment="Center" />
+                                <StackPanel Grid.Column="1" Spacing="4" Width="160" VerticalAlignment="Center">
+                                    <TextBlock x:Name="DaysText" HorizontalAlignment="Right"
+                                               Style="{StaticResource CaptionSecondaryStyle}" />
+                                    <ProgressBar x:Name="MonthProgress" Minimum="0" Maximum="1"
+                                                 AutomationProperties.AutomationId="LivingMonthProgress" />
+                                </StackPanel>
+                            </Grid>
+                            <Grid ColumnSpacing="10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Style="{StaticResource StatTileStyle}">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock x:Uid="LivingTileSpent" Style="{StaticResource CaptionSecondaryStyle}" />
+                                        <TextBlock x:Name="ThisMonthSpentText" Style="{StaticResource StatValueStyle}" />
+                                        <TextBlock x:Name="SpentBreakdownText" Style="{StaticResource CaptionSecondaryStyle}" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Column="1" Style="{StaticResource StatTileStyle}">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock x:Uid="LivingTileExpected" Style="{StaticResource CaptionSecondaryStyle}" />
+                                        <TextBlock x:Name="ExpectedRemainingText" Style="{StaticResource StatValueStyle}" />
+                                        <TextBlock x:Uid="LivingExpectedHint" Style="{StaticResource CaptionSecondaryStyle}" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Column="2" Style="{StaticResource StatTileStyle}">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock x:Uid="LivingTilePace" Style="{StaticResource CaptionSecondaryStyle}" />
+                                        <TextBlock x:Name="PaceText" Style="{StaticResource StatValueStyle}" />
+                                        <TextBlock x:Name="PaceHintText" Style="{StaticResource CaptionSecondaryStyle}" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                            <Border x:Name="ProjectionPanel" Background="{ThemeResource ReferenceBlueTintBrush}"
+                                    CornerRadius="8" Padding="12,10">
+                                <Grid ColumnSpacing="10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <FontIcon Glyph="&#xE9D2;" FontSize="14" VerticalAlignment="Center"
+                                              Foreground="{ThemeResource ReferenceBlueTextBrush}" />
+                                    <TextBlock x:Name="ProjectionText" Grid.Column="1" TextWrapping="Wrap"
+                                               VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Where the money goes -->
+                    <Border x:Name="CategoriesCard" Style="{StaticResource CardStyle}"
+                            AutomationProperties.AutomationId="LivingCategoriesCard">
+                        <StackPanel Spacing="10">
+                            <StackPanel Spacing="2">
+                                <TextBlock x:Uid="LivingCategoriesTitle" Style="{StaticResource CardTitleStyle}" />
+                                <TextBlock x:Name="CategoriesHintText" Style="{StaticResource CaptionSecondaryStyle}" />
+                            </StackPanel>
+                            <StackPanel x:Name="CategoryList" Spacing="4" />
+                            <TextBlock x:Name="DiningNoteText" Visibility="Collapsed" TextWrapping="Wrap"
+                                       Style="{StaticResource CaptionSecondaryStyle}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <ScrollViewer x:Name="SecondaryScroller" Grid.Column="1"
+                          HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollMode="Auto" VerticalScrollBarVisibility="Hidden">
+                <StackPanel x:Name="SecondaryPanel" Spacing="16">
+
+                    <!-- Cash runway -->
+                    <Border x:Name="RunwayCard" Style="{StaticResource CardStyle}"
+                            AutomationProperties.AutomationId="LivingRunwayCard">
+                        <StackPanel Spacing="10">
+                            <TextBlock x:Uid="LivingRunwayTitle" Style="{StaticResource CardTitleStyle}" />
+                            <TextBlock x:Name="RunwayMonthsText" Style="{StaticResource HeroAmountStyle}" />
+                            <ProgressBar x:Name="RunwayBar" Minimum="0" Maximum="12" />
+                            <TextBlock x:Name="RunwayHintText" TextWrapping="Wrap"
+                                       Style="{StaticResource CaptionSecondaryStyle}" />
+                            <TextBlock x:Name="RunwayEmptyText" x:Uid="LivingRunwayEmpty" Visibility="Collapsed"
+                                       TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Recurring ledger -->
+                    <Border x:Name="RecurringCard" Style="{StaticResource CardStyle}"
+                            AutomationProperties.AutomationId="LivingRecurringCard">
+                        <StackPanel Spacing="10">
+                            <TextBlock x:Uid="LivingRecurringTitle" Style="{StaticResource CardTitleStyle}" />
+                            <TextBlock x:Name="RecurringSummaryText" TextWrapping="Wrap"
+                                       Style="{StaticResource CaptionSecondaryStyle}" />
+                            <Border x:Name="UnconfirmedPanel" Visibility="Collapsed" CornerRadius="8" Padding="12,10"
+                                    Background="{ThemeResource SystemFillColorCautionBackgroundBrush}">
+                                <Grid ColumnSpacing="10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <FontIcon Glyph="&#xE946;" FontSize="14" VerticalAlignment="Top" Margin="0,2,0,0" />
+                                    <TextBlock x:Name="UnconfirmedText" Grid.Column="1" TextWrapping="Wrap" />
+                                </Grid>
+                            </Border>
+                            <ScrollViewer MaxHeight="320" VerticalScrollBarVisibility="Auto">
+                                <StackPanel x:Name="DetectedList" Spacing="0" Margin="0,0,8,0" />
+                            </ScrollViewer>
+                            <TextBlock x:Name="NoDetectedText" x:Uid="LivingNoRecurring" Visibility="Collapsed"
+                                       TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Recent charges -->
+                    <Border x:Name="RecentCard" Style="{StaticResource CardStyle}">
+                        <StackPanel Spacing="10">
+                            <Grid ColumnSpacing="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock x:Uid="LivingTransactionsTitle" Style="{StaticResource CardTitleStyle}"
+                                           VerticalAlignment="Center" />
+                                <HyperlinkButton x:Uid="LivingViewAll" Grid.Column="1" Padding="6,2"
+                                                 AutomationProperties.AutomationId="LivingViewAllTransactions"
+                                                 Click="ViewAllTransactions_Click" />
+                            </Grid>
+                            <StackPanel x:Name="TransactionList" Spacing="0" />
+                            <TextBlock x:Name="NoTransactionsText" x:Uid="LivingNoTransactions"
+                                       Visibility="Collapsed"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</Page>

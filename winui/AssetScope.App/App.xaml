@@ -1,0 +1,126 @@
+<Application
+    x:Class="AssetScope.App.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <ResourceDictionary Source="Themes/SettingsToggleSwitch.xaml" />
+                <!-- Density-dependent styles. App.ApplyDensity merges
+                     Density.Compact.xaml after this one when compact density is
+                     on; a later merged dictionary wins, which is only possible
+                     because these keys are not declared directly below. -->
+                <ResourceDictionary Source="Themes/Density.Comfortable.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <!-- Mica is the window surface. Page roots must remain
+                         transparent or an opaque canvas silently hides it. -->
+                    <SolidColorBrush x:Key="AppCanvasBrush" Color="#00FFFFFF" />
+                    <SolidColorBrush x:Key="AppSidebarBrush" Color="#B8F5F5F5" />
+                    <!-- Opaque default caption fill shows as a 1px top line
+                         on a maximized custom title bar. -->
+                    <SolidColorBrush x:Key="WindowCaptionBackground" Color="Transparent" />
+                    <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled" Color="Transparent" />
+                    <SolidColorBrush x:Key="ReferenceCardBrush" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="ReferenceCardStrokeBrush" Color="#E5E5E5" />
+                    <SolidColorBrush x:Key="ReferenceBlueTintBrush" Color="#EAF1FF" />
+                    <SolidColorBrush x:Key="ReferenceBlueTintHoverBrush" Color="#E3ECFF" />
+                    <SolidColorBrush x:Key="ReferenceBlueTintPressedBrush" Color="#D9E6FF" />
+                    <SolidColorBrush x:Key="ReferenceRedTintBrush" Color="#FFF0EF" />
+                    <SolidColorBrush x:Key="ReferencePurpleTintBrush" Color="#F1EBFF" />
+                    <SolidColorBrush x:Key="ReferenceNeutralTintBrush" Color="#F4F4F4" />
+                    <SolidColorBrush x:Key="ReferenceTealTintBrush" Color="#E8F7F3" />
+                    <!-- Blue for text: the brand blue is too dim to read on a
+                         dark card, so text gets a per-theme shade of it. -->
+                    <SolidColorBrush x:Key="ReferenceBlueTextBrush" Color="#0F5BD8" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="AppCanvasBrush" Color="#001F1F1F" />
+                    <SolidColorBrush x:Key="AppSidebarBrush" Color="#B8252525" />
+                    <SolidColorBrush x:Key="WindowCaptionBackground" Color="Transparent" />
+                    <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled" Color="Transparent" />
+                    <SolidColorBrush x:Key="ReferenceCardBrush" Color="#2B2B2B" />
+                    <SolidColorBrush x:Key="ReferenceCardStrokeBrush" Color="#3F3F3F" />
+                    <SolidColorBrush x:Key="ReferenceBlueTintBrush" Color="#233655" />
+                    <SolidColorBrush x:Key="ReferenceBlueTintHoverBrush" Color="#294264" />
+                    <SolidColorBrush x:Key="ReferenceBlueTintPressedBrush" Color="#304D72" />
+                    <SolidColorBrush x:Key="ReferenceRedTintBrush" Color="#512825" />
+                    <SolidColorBrush x:Key="ReferencePurpleTintBrush" Color="#3C3053" />
+                    <SolidColorBrush x:Key="ReferenceNeutralTintBrush" Color="#383838" />
+                    <SolidColorBrush x:Key="ReferenceTealTintBrush" Color="#243F3B" />
+                    <SolidColorBrush x:Key="ReferenceBlueTextBrush" Color="#79AEFF" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="HighContrast">
+                    <SolidColorBrush x:Key="AppCanvasBrush" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="AppSidebarBrush" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="ReferenceCardBrush" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="ReferenceCardStrokeBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+                    <SolidColorBrush x:Key="ReferenceBlueTintBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+                    <SolidColorBrush x:Key="ReferenceBlueTintHoverBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+                    <SolidColorBrush x:Key="ReferenceBlueTintPressedBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+                    <SolidColorBrush x:Key="ReferenceRedTintBrush" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="ReferencePurpleTintBrush" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="ReferenceNeutralTintBrush" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="ReferenceTealTintBrush" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="ReferenceBlueTextBrush" Color="{ThemeResource SystemColorHotlightColor}" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+
+            <!-- Category palette shared by donut, bars, legends. -->
+            <Color x:Key="CategoryColorBankCash">#0F7B0F</Color>
+            <Color x:Key="CategoryColorInvestment">#0F6CBD</Color>
+            <Color x:Key="CategoryColorRetirement">#8661C5</Color>
+            <Color x:Key="CategoryColorProperty">#EAA300</Color>
+            <Color x:Key="CategoryColorVehicle">#038387</Color>
+            <Color x:Key="CategoryColorOther">#8A8A8A</Color>
+            <Color x:Key="CategoryColorLiability">#C42B1C</Color>
+
+            <SolidColorBrush x:Key="CategoryBrushBankCash" Color="{StaticResource CategoryColorBankCash}" />
+            <SolidColorBrush x:Key="CategoryBrushInvestment" Color="{StaticResource CategoryColorInvestment}" />
+            <SolidColorBrush x:Key="CategoryBrushRetirement" Color="{StaticResource CategoryColorRetirement}" />
+            <SolidColorBrush x:Key="CategoryBrushProperty" Color="{StaticResource CategoryColorProperty}" />
+            <SolidColorBrush x:Key="CategoryBrushVehicle" Color="{StaticResource CategoryColorVehicle}" />
+            <SolidColorBrush x:Key="CategoryBrushOther" Color="{StaticResource CategoryColorOther}" />
+            <SolidColorBrush x:Key="CategoryBrushLiability" Color="{StaticResource CategoryColorLiability}" />
+
+            <SolidColorBrush x:Key="PositiveChangeBrush" Color="#12A044" />
+            <SolidColorBrush x:Key="NegativeChangeBrush" Color="#FF3B30" />
+            <SolidColorBrush x:Key="ChartLineBrush" Color="#1267F4" />
+            <!-- Neutral app surfaces. Blue belongs to data and actions, not the
+                 window canvas; the blue in the design reference is desktop wallpaper. -->
+            <SolidColorBrush x:Key="ReferenceBlueBrush" Color="#1267F4" />
+            <SolidColorBrush x:Key="ReferenceGreenBrush" Color="#12A044" />
+            <SolidColorBrush x:Key="ReferenceRedBrush" Color="#FF3B30" />
+            <SolidColorBrush x:Key="ReferencePurpleBrush" Color="#7C4DDB" />
+            <!-- Card, type-scale and page-shell styles are density-dependent
+                 and live in Themes/Density.*.xaml. -->
+
+            <!-- Plaid / SnapTrade header actions share a width so the
+                 two connection rows do not look like different controls. -->
+            <Style x:Key="ConnectionHeaderButtonStyle" TargetType="Button">
+                <Setter Property="MinWidth" Value="200" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+
+            <Style x:Key="DividerStyle" TargetType="Rectangle">
+                <Setter Property="Height" Value="1" />
+                <Setter Property="Fill" Value="{ThemeResource ReferenceCardStrokeBrush}" />
+            </Style>
+
+            <Style x:Key="InfoTipButtonStyle" TargetType="Button">
+                <Setter Property="Width" Value="22" />
+                <Setter Property="Height" Value="22" />
+                <Setter Property="MinWidth" Value="22" />
+                <Setter Property="MinHeight" Value="22" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

@@ -1,0 +1,674 @@
+openapi: "3.1.0"
+info:
+  title: AssetScope Native API (WinUI sidecar)
+  version: "1.0"
+  description: >
+    Loopback-only typed JSON API for native desktop clients. Every request
+    requires the per-launch session Bearer token delivered in the stdout
+    handshake. Every response uses the data/meta/error envelope. Monetary
+    amounts are fixed two-decimal strings (SPEC §9.1).
+servers:
+  - url: http://127.0.0.1:{port}/v1
+    variables:
+      port:
+        default: "0"
+        description: Random loopback port from the startup handshake.
+
+security:
+  - bearerToken: []
+
+paths:
+  /health:
+    get:
+      summary: Liveness + version handshake
+      responses: { "200": { $ref: "#/components/responses/Health" } }
+  /bootstrap:
+    get:
+      summary: Everything the shell needs to render its first frame
+      responses: { "200": { $ref: "#/components/responses/Bootstrap" } }
+  /shutdown:
+    post:
+      summary: Graceful sidecar shutdown (parent-initiated)
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /diagnostics/summary:
+    get:
+      summary: Versions, pid, data dir, recent sync runs (never the token)
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /diagnostics/logs:
+    get:
+      summary: Recent redacted log entries (request ids, statuses, counts — no secrets)
+      parameters:
+        - { name: limit, in: query, schema: { type: integer, default: 50, maximum: 200 } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /diagnostics/logs/clear:
+    post:
+      summary: Clear the in-memory log ring
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+
+  /data:
+    delete:
+      summary: >
+        Delete ALL local data (database, key, exports, backups, runtime, .env)
+        after the client's typed product-name confirmation; the sidecar exits
+        afterwards and the app restarts into onboarding.
+      parameters:
+        - { name: confirm, in: query, schema: { type: boolean, default: false } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+
+  /trends:
+    get:
+      summary: Per-category as-of series for the stacked chart; liabilities separate
+      parameters:
+        - { name: range, in: query, schema: { type: string, enum: [1m, 3m, 1y, all], default: 1y } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+
+  /insights:
+    get:
+      summary: Ranked explainable financial insights from aggregate cash-flow, investment and spending facts
+      parameters:
+        - { name: range, in: query, schema: { type: string, enum: [1m, 3m, 1y, all], default: 1y } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 10, default: 3 } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+
+  /transactions:
+    get:
+      summary: Posted, non-ignored bank/card transactions, newest first
+      parameters:
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+        - { name: accountId, in: query, schema: { type: string } }
+        - { name: category, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, default: 100, maximum: 1000 } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /transactions/summary:
+    get:
+      summary: Cash flow totals by month plus spending by category for a date window; optional single-account scope
+      parameters:
+        - { name: from, in: query, required: true, schema: { type: string, format: date } }
+        - { name: to, in: query, required: true, schema: { type: string, format: date } }
+        - { name: accountId, in: query, schema: { type: string } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /transactions/{transactionId}:
+    patch:
+      summary: One-tap living annotations (party size, ride origin/destination)
+      parameters:
+        - { name: transactionId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                partySize: { type: integer, minimum: 1, maximum: 12, nullable: true }
+                tripOrigin: { type: string, nullable: true }
+                tripDestination: { type: string, nullable: true }
+                tripKind: { type: string, enum: [campus, airport, late_night, commute, one_off, other], nullable: true }
+                livingKind: { type: string, enum: [dining, grocery, rideshare, income, rent, utilities, phone, subscription, tuition, transfer, other], nullable: true }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+
+  /living:
+    get:
+      summary: Month leftover, fixed vs flexible split, meal costs, ride repeats, and tradeoffs
+      parameters:
+        - { name: diningMealsPerWeek, in: query, schema: { type: integer, minimum: 0, maximum: 14 } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /living/merchants:
+    get:
+      summary: Every merchant in the Living window with its automatic kind and the user's label, for the Settings label card
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /living/merchant-defaults/{merchantKey}:
+    put:
+      summary: Label a merchant (rent, income, …) or set its expected monthly amount. An absent field is left alone; null returns it to automatic
+      parameters:
+        - { name: merchantKey, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              minProperties: 1
+              properties:
+                monthlyAmount: { $ref: "#/components/schemas/AmountString", nullable: true }
+                kind: { type: string, enum: [dining, grocery, rideshare, income, rent, utilities, phone, subscription, tuition, transfer, other], nullable: true }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /living/preferences:
+    put:
+      summary: Dining-meals slider and the goal used to translate savings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                diningMealsPerWeek: { type: integer, minimum: 0, maximum: 14, nullable: true }
+                goalKind: { type: string, enum: [none, contribution, target] }
+                goalLabel: { type: string, nullable: true }
+                goalMonthlyContribution: { $ref: "#/components/schemas/AmountString" }
+                goalTargetAmount: { $ref: "#/components/schemas/AmountString" }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /living/obligations:
+    post:
+      summary: Add a known fixed cost that may not appear as a transaction yet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, amount]
+              properties:
+                name: { type: string }
+                amount: { $ref: "#/components/schemas/AmountString" }
+                interval: { type: string, enum: [weekly, monthly, yearly], default: monthly }
+                kind: { type: string, enum: [rent, utilities, phone, subscription, tuition, other], default: other }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /living/obligations/{obligationId}:
+    patch:
+      parameters:
+        - { name: obligationId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+    delete:
+      parameters:
+        - { name: obligationId, in: path, required: true, schema: { type: string } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /living/routes/alternative:
+    put:
+      summary: Transit (or other) alternative monthly cost for a repeated origin/destination pair
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [origin, destination]
+              properties:
+                origin: { type: string }
+                destination: { type: string }
+                label: { type: string, nullable: true }
+                monthlyAmount: { $ref: "#/components/schemas/AmountString" }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+
+  /rewards:
+    get:
+      summary: Best credit card per spending category, and recent card spending versus the best card
+      parameters:
+        - { name: range, in: query, schema: { type: string, enum: ["1m", "3m", "1y"], default: "3m" } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /rewards/cards/{accountId}:
+    put:
+      summary: Set which card product a credit account is, its 3% choice category, this quarter's rotating categories, and which quarters were activated
+      parameters:
+        - { name: accountId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                productId: { type: string, nullable: true, description: "Null reverts to the product detected from the account name" }
+                choiceCategory: { type: string, enum: [gas, onlineShopping, dining, travel, drugstores, homeImprovement], nullable: true }
+                rotatingCategories:
+                  type: array
+                  nullable: true
+                  description: "Stored for the current quarter only; an empty list records a quarter the user did not activate and overrides the issuer calendar"
+                  items: { type: string, enum: [dining, groceries, gas, travel, transit, drugstores, streaming, onlineShopping, phoneInternet, homeImprovement, entertainment] }
+                activation:
+                  type: object
+                  description: "Marks the current or next quarter's rotating categories as activated with the issuer. The quarterly bonus counts only for an activated quarter, and the mark ends that quarter's activation reminder"
+                  required: [quarter, activated]
+                  properties:
+                    quarter: { type: string, pattern: "^\\d{4}-Q[1-4]$", example: "2026-Q4" }
+                    activated: { type: boolean }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /rewards/preferences:
+    put:
+      summary: Cents-per-point values for flexible points currencies
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pointValues:
+                  type: object
+                  additionalProperties: { type: string, nullable: true, description: "Cents per point, 0.50 to 3.00; null restores the default" }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+
+  /backups:
+    get:
+      summary: List database backups (daily automatic + manual + pre-restore)
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+    post:
+      summary: Create a fresh timestamped backup now (VACUUM INTO)
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /backups/{backupId}/restore:
+    post:
+      summary: >
+        Verify the backup's integrity, protectively back up the current
+        database, restore, then exit; the client must restart the sidecar.
+      parameters:
+        - { name: backupId, in: path, required: true, schema: { type: string } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+
+  /exports/accounts.csv:
+    post:
+      summary: Write an accounts CSV into the data directory's exports folder
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /exports/net-worth.csv:
+    post:
+      summary: Write a net-worth as-of series CSV (carry-forward semantics documented in-file)
+      parameters:
+        - { name: range, in: query, schema: { type: string, enum: [1m, 3m, 1y, all], default: all } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+
+  /dashboard:
+    get:
+      summary: Summary + as-of history + top accounts + allocation + data quality
+      parameters:
+        - name: range
+          in: query
+          schema: { type: string, enum: [1m, 3m, 1y, all], default: 1y }
+      responses: { "200": { $ref: "#/components/responses/Dashboard" } }
+  /net-worth/history:
+    get:
+      summary: As-of carry-forward series (assets/liabilities/net worth per date)
+      parameters:
+        - { name: range, in: query, schema: { type: string, enum: [1m, 3m, 1y, all] } }
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+        - { name: granularity, in: query, schema: { type: string, enum: [day, week, month] } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /allocation:
+    get:
+      summary: Asset-only allocation buckets with drill-down account ids
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+
+  /accounts:
+    get:
+      summary: Account summaries with balance, change, sparkline, freshness
+      parameters:
+        - { name: category, in: query, schema: { type: string } }
+        - { name: search, in: query, schema: { type: string } }
+        - { name: includeExcluded, in: query, schema: { type: boolean, default: true } }
+        - { name: includeArchived, in: query, schema: { type: boolean, default: false } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /accounts/manual:
+    post:
+      summary: Create a manual asset or liability
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateManualAccount" }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /accounts/{accountId}:
+    get:
+      summary: Account detail + 10 most recent snapshots
+      parameters: [ { $ref: "#/components/parameters/accountId" } ]
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+    patch:
+      summary: Edit nickname/owner/excluded (+ name/category/notes for manual)
+      parameters: [ { $ref: "#/components/parameters/accountId" } ]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AccountPatch" }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+    delete:
+      summary: Delete a manual account (Plaid accounts return CONFLICT)
+      parameters: [ { $ref: "#/components/parameters/accountId" } ]
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /accounts/{accountId}/value:
+    patch:
+      summary: Upsert a manual value snapshot at an effective date
+      parameters: [ { $ref: "#/components/parameters/accountId" } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount]
+              properties:
+                amount: { $ref: "#/components/schemas/AmountString" }
+                effectiveDate: { type: string, format: date }
+                note: { type: string }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /accounts/{accountId}/archive:
+    post:
+      parameters: [ { $ref: "#/components/parameters/accountId" } ]
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /accounts/{accountId}/unarchive:
+    post:
+      parameters: [ { $ref: "#/components/parameters/accountId" } ]
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+
+  /sync:
+    post:
+      summary: Start (or attach to) the single sync job; demo mode returns NOT_CONFIGURED
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                trigger: { type: string, enum: [initial, launch, manual, scheduled, reconnect, retry] }
+                force: { type: boolean, default: true }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /sync/status:
+    get:
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /sync/runs:
+    get:
+      parameters:
+        - { name: limit, in: query, schema: { type: integer, default: 50, maximum: 200 } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /sync/runs/{runId}:
+    get:
+      summary: One run with its per-institution outcomes
+      parameters:
+        - { name: runId, in: path, required: true, schema: { type: string } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+
+  /plaid/config-status:
+    get:
+      summary: configured/environment/clientIdSuffix/secretConfigured — never the secret
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /plaid/config:
+    put:
+      summary: >
+        Apply credentials for this sidecar process and validate them by creating
+        a link token; rolls back on failure. The secret is held in memory only —
+        persistence belongs to the client (Windows Credential Manager).
+        Demo mode returns NOT_CONFIGURED.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                environment: { type: string, enum: [sandbox, development, production] }
+                clientId: { type: string }
+                secret: { type: string, writeOnly: true }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /plaid/config/import-env:
+    post:
+      summary: >
+        Import upstream .env credentials, validate them live, and return them
+        once over the authed loopback channel so the client migrates the secret
+        into Windows Credential Manager.
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /plaid/items:
+    get:
+      summary: Connected institutions with status/accountCount/lastSuccessAt
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /plaid/link-sessions:
+    post:
+      summary: >
+        Start Plaid Hosted Link in the system browser. New connections use
+        Multi-Item Link so several institutions can be added in one session;
+        reconnect uses single-Item update mode. One active session at a time.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                daysRequested: { type: integer, minimum: 30, maximum: 730 }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /plaid/link-sessions/{sessionId}:
+    get:
+      summary: Poll session state (waitingForUser/completed/cancelled/expired/failed)
+      parameters:
+        - { name: sessionId, in: path, required: true, schema: { type: string } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /plaid/link-sessions/{sessionId}/cancel:
+    post:
+      parameters:
+        - { name: sessionId, in: path, required: true, schema: { type: string } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /plaid/items/{itemId}/reconnect:
+    post:
+      summary: Update-mode Link session for ITEM_LOGIN_REQUIRED; no duplicate item
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /plaid/items/{itemId}/disconnect:
+    post:
+      summary: Stop syncing but keep all local data (default disconnect)
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /plaid/items/{itemId}/data:
+    delete:
+      summary: >
+        Two-phase destructive delete: without confirm=true returns a preview of
+        the accounts/transactions/snapshots that would be removed; with
+        confirm=true backs up the database, then deletes the item and all data.
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+        - { name: confirm, in: query, schema: { type: boolean, default: false } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+
+  /investments/overview:
+    get:
+      summary: Investment value, gain/loss, accounts, positions, cached balance performance and allocation
+      description: Performance uses atomic local balance snapshots, enriched by SnapTrade's optional estimated history when available.
+      parameters:
+        - { name: range, in: query, schema: { type: string, enum: [1d, 1w, 1m, 1y, all], default: 1y } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /investments/accounts:
+    get:
+      summary: All investment accounts across Plaid, SnapTrade and manual sources
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /investments/positions:
+    get:
+      summary: Cached security-level holdings
+      parameters:
+        - { name: accountId, in: query, schema: { type: string } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /investments/activities:
+    get:
+      summary: Cached brokerage activities such as trades, dividends, fees and transfers
+      parameters:
+        - { name: accountId, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, default: 100, maximum: 1000 } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /investments/orders:
+    get:
+      summary: Cached read-only brokerage orders from the last 90 days
+      description: Uses SnapTrade's ordinary cached orders endpoint; it never requests a real-time refresh or places, updates, or cancels an order.
+      parameters:
+        - { name: accountId, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, default: 100, maximum: 1000 } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+
+  /investments/realized:
+    get:
+      summary: Realized profit and loss from cached BUY/SELL activity, matched FIFO
+      description: >-
+        Lots are per account and symbol; cost is carried in integer cents and consumed
+        proportionally. Sales whose shares predate the cached history are returned with
+        basisComplete false rather than given an invented cost basis.
+      parameters:
+        - { name: accountId, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, default: 200, maximum: 1000 } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+
+  /snaptrade/config-status:
+    get:
+      summary: Personal API Key configuration status; never returns the Consumer Key
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /snaptrade/config:
+    put:
+      summary: Validate Personal API Key credentials and retain them in process memory only
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [clientId, consumerKey]
+              properties:
+                clientId: { type: string }
+                consumerKey: { type: string, writeOnly: true }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /snaptrade/portal:
+    post:
+      summary: Generate a five-minute read-only Connection Portal URL
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /snaptrade/connections:
+    get:
+      summary: Locally cached brokerage connections and reconnect status
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /snaptrade/connections/{connectionId}/reconnect:
+    post:
+      summary: Generate a read-only Connection Portal URL for a disabled connection
+      parameters:
+        - { name: connectionId, in: path, required: true, schema: { type: string } }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /snaptrade/sync:
+    post:
+      summary: Read SnapTrade daily accounts, balances, positions, activities and 90-day orders plus optional one-year value history, then atomically replace local investment data
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                trigger: { type: string, enum: [initial, launch, manual, scheduled, portal-return, retry] }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+  /snaptrade/sync/status:
+    get:
+      summary: Latest investment sync run and its atomic completion state
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+
+  /settings:
+    get:
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+    patch:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                theme: { type: string, enum: [system, light, dark] }
+                syncOnLaunch: { type: boolean }
+                dailySyncEnabled: { type: boolean }
+                dailySyncTime: { type: string, pattern: "^\\d{2}:\\d{2}$" }
+                showDecimals: { type: boolean }
+      responses: { "200": { $ref: "#/components/responses/Generic" } }
+
+components:
+  securitySchemes:
+    bearerToken:
+      type: http
+      scheme: bearer
+      description: Per-launch session token from the stdout handshake.
+
+  parameters:
+    accountId:
+      name: accountId
+      in: path
+      required: true
+      schema: { type: string }
+
+  schemas:
+    AmountString:
+      type: string
+      pattern: "^-?\\d{1,13}(\\.\\d{1,2})?$"
+      description: Fixed-decimal monetary amount; parse as decimal, never float.
+    Money:
+      type: object
+      required: [amount, currencyCode]
+      properties:
+        amount: { $ref: "#/components/schemas/AmountString" }
+        currencyCode: { type: string, default: USD }
+    Change:
+      type: object
+      nullable: true
+      properties:
+        amount: { $ref: "#/components/schemas/AmountString" }
+        ratio: { type: [string, "null"], description: "Decimal string, 4 places; null when previous is 0" }
+        comparison: { type: string, enum: [yesterday, previousRecord] }
+        comparedTo: { type: string, format: date }
+    Envelope:
+      type: object
+      required: [data, meta, error]
+      properties:
+        data: { type: [object, "null"] }
+        meta:
+          type: object
+          required: [requestId, generatedAt, protocolVersion]
+          properties:
+            requestId: { type: string }
+            generatedAt: { type: string, format: date-time }
+            protocolVersion: { type: string, const: "1.0" }
+        error:
+          type: [object, "null"]
+          properties:
+            code:
+              type: string
+              enum: [NOT_CONFIGURED, AUTH_REQUIRED, ITEM_LOGIN_REQUIRED, NETWORK_UNAVAILABLE,
+                     RATE_LIMITED, SYNC_IN_PROGRESS, DATA_CORRUPT, VALIDATION_ERROR,
+                     NOT_FOUND, CONFLICT, UNAUTHORIZED, INTERNAL_ERROR]
+            message: { type: string }
+            retryable: { type: boolean }
+            details: { type: [object, "null"], additionalProperties: { type: string } }
+    CreateManualAccount:
+      type: object
+      required: [name, accountClass, manualCategory, initialValue]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        accountClass: { type: string, enum: [asset, liability] }
+        manualCategory: { type: string, enum: [cash, property, vehicle, investment, loan, other] }
+        initialValue:
+          type: object
+          required: [amount, effectiveDate]
+          properties:
+            amount: { $ref: "#/components/schemas/AmountString" }
+            currencyCode: { type: string, const: USD }
+            effectiveDate: { type: string, format: date, description: "Not in the future" }
+        includeInNetWorth: { type: boolean, default: true }
+        notes: { type: [string, "null"] }
+    AccountPatch:
+      type: object
+      additionalProperties: false
+      properties:
+        nickname: { type: [string, "null"] }
+        owner: { type: [string, "null"] }
+        excluded: { type: boolean }
+        name: { type: string, description: "Manual accounts only" }
+        manualCategory: { type: string, description: "Manual accounts only" }
+        notes: { type: [string, "null"], description: "Manual accounts only" }
+
+  responses:
+    Generic:
+      description: Envelope-wrapped response
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Envelope" }
+    Health:
+      description: Envelope with status/sidecarVersion/protocolVersion/mode
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Envelope" }
+    Bootstrap:
+      description: Envelope with app/onboarding/sync/preferences
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Envelope" }
+    Dashboard:
+      description: Envelope with summary/history/topAccounts/allocation/dataQuality
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Envelope" }

@@ -1,0 +1,124 @@
+<Page
+    x:Class="AssetScope.App.Pages.AccountsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mux="using:Microsoft.UI.Xaml.Controls"
+    xmlns:controls="using:AssetScope.App.Controls"
+    AutomationProperties.AutomationId="AccountsPage"
+    Background="{ThemeResource AppCanvasBrush}"
+    NavigationCacheMode="Required"
+    SizeChanged="AccountsPage_SizeChanged">
+
+    <Grid x:Name="PageLayout" Style="{StaticResource ReferencePageGridStyle}" RowSpacing="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <controls:PageHeader x:Name="Header" Grid.Row="0" />
+
+        <Grid x:Name="ToolbarGrid" Grid.Row="1" ColumnSpacing="16" RowSpacing="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="SearchColumn" Width="360" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <AutoSuggestBox x:Name="SearchBox" x:Uid="AccountSearch" QueryIcon="Find"
+                            AutomationProperties.AutomationId="AccountsSearchBox"
+                            VerticalAlignment="Center"
+                            TextChanged="SearchBox_TextChanged" />
+            <!-- Page actions sit in the toolbar, never behind a menu. -->
+            <StackPanel x:Name="ActionsPanel" Grid.Row="0" Grid.Column="1" Orientation="Horizontal"
+                        Spacing="8" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <DropDownButton x:Name="SortButton"
+                                AutomationProperties.AutomationId="AccountsSortButton">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE8CB;" FontSize="14" />
+                        <TextBlock x:Name="SortLabel" />
+                    </StackPanel>
+                    <DropDownButton.Flyout>
+                        <MenuFlyout x:Name="SortMenu" Placement="BottomEdgeAlignedRight" />
+                    </DropDownButton.Flyout>
+                </DropDownButton>
+                <Button x:Name="AddAccountButton" Style="{StaticResource AccentButtonStyle}"
+                        AutomationProperties.AutomationId="AccountsAddButton"
+                        Click="AddAccountButton_Click">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE710;" FontSize="14" />
+                        <TextBlock x:Name="AddAccountLabel" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+            <ScrollViewer x:Name="FilterScroller" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                          AutomationProperties.AutomationId="AccountsFilterScroller"
+                          HorizontalAlignment="Left"
+                          HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Hidden"
+                          VerticalScrollMode="Disabled" VerticalScrollBarVisibility="Disabled">
+                <mux:SelectorBar x:Name="FilterBar"
+                                 AutomationProperties.AutomationId="AccountsFilterBar"
+                                 SelectionChanged="FilterBar_SelectionChanged">
+                    <mux:SelectorBarItem x:Name="FilterAllItem" x:Uid="FilterAll" Tag="" />
+                    <mux:SelectorBarItem x:Uid="FilterBank" Tag="bank" />
+                    <mux:SelectorBarItem x:Uid="FilterCredit" Tag="credit" />
+                    <mux:SelectorBarItem x:Uid="FilterInvestment" Tag="investment" />
+                </mux:SelectorBar>
+            </ScrollViewer>
+        </Grid>
+
+        <Grid x:Name="AccountsContentGrid" Grid.Row="2" ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="AccountsColumn" Width="*" MinWidth="420" />
+                <ColumnDefinition x:Name="DetailsColumn" Width="440" />
+            </Grid.ColumnDefinitions>
+
+            <Border x:Name="AccountListBorder" Style="{StaticResource CardStyle}" Padding="4">
+                <Grid RowSpacing="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid x:Name="AccountListHeader" Padding="16,8,12,6" ColumnSpacing="12"
+                          AutomationProperties.AutomationId="AccountsListHeader">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="34" />
+                            <ColumnDefinition Width="1.7*" />
+                            <ColumnDefinition Width="0.8*" />
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="36" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="1" x:Uid="ColName" Style="{StaticResource CaptionSecondaryStyle}" />
+                        <TextBlock Grid.Column="2" x:Uid="ColType" Style="{StaticResource CaptionSecondaryStyle}" />
+                        <TextBlock Grid.Column="3" x:Uid="ColBalance" Style="{StaticResource CaptionSecondaryStyle}" HorizontalAlignment="Right" />
+                        <TextBlock Grid.Column="4" x:Uid="ColChange" Style="{StaticResource CaptionSecondaryStyle}" HorizontalAlignment="Right" />
+                    </Grid>
+                    <ScrollViewer x:Name="AccountList" Grid.Row="1"
+                                  AutomationProperties.AutomationId="AccountsList"
+                                  VerticalScrollMode="Auto"
+                                  VerticalScrollBarVisibility="Hidden"
+                                  HorizontalScrollMode="Disabled"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel x:Name="AccountGroupsPanel" Spacing="2" />
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <Border x:Name="DetailBorder" Grid.Column="1" Style="{StaticResource CardStyle}">
+                <ScrollViewer VerticalScrollBarVisibility="Hidden"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel x:Name="DetailPanel" Spacing="14"
+                                AutomationProperties.AutomationId="AccountDetailPanel">
+                        <TextBlock x:Name="DetailEmptyText" x:Uid="DetailEmpty"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   HorizontalAlignment="Center" Margin="0,40,0,0" />
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

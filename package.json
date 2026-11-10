@@ -1,0 +1,30 @@
+{
+  "name": "assetscope",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local-first WinUI 3 net-worth dashboard with Plaid and read-only SnapTrade sync",
+  "type": "module",
+  "scripts": {
+    "sidecar": "node --import tsx/esm native-api/src/main.ts",
+    "cli": "node --import tsx/esm native-api/src/cli.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run tests/native-api"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.17.3",
+    "dotenv": "^17.4.2",
+    "plaid": "^42.2.0",
+    "snaptrade-typescript-sdk": "^12.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "esbuild": "^0.28.2",
+    "tsx": "^4.22.4",
+    "typescript": "^7.0.2",
+    "vitest": "^3.2.4"
+  }
+}
